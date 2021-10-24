@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah&display=swap"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/wired-elements/2.1.2/wired-elements-iife.min.js" integrity="sha512-IQf4Z/yUvley2bb6oX0YLi6f94NMEha2ivsCDtyLi399I6NFBqUT0bk++KRGQgCt+wQP1AEUAyF6PqJ2EoGXfQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -29,54 +28,57 @@
   </style>
 </head>
 <body>
-  <main x-data="state">
+  <main>
     <section>
-      <h1 x-text="projectName">Secret Project Name Generator</h1>
-      <wired-button id="btnGen" elevation="2"
-        @click="generateProjectName()">
+      <h1 id="projectName">Secret Project Name Generator</h1>
+      <wired-checkbox onchange="toggleUnderscore(this)">
+        Underscores
+      </wired-checkbox>
+      <wired-button elevation="2" onclick="generateName()">
         Generate Secret Project Name
       </wired-button>
-      <wired-button elevation="2" id="btnCopy"
-        @click="copyToClipboard">
+      <wired-button elevation="2" onclick="copyToClipboard()">
         Copy To Clipboard
       </wired-button>
-      <div x-text="copyState"></div>
-      <div>A project by <a href="https://github.com/rcagantas">Roel Cagantas</a></div>
+      <div id="copyState"></div>
+      <div>A <a href="https://github.com/rcagantas/project-name-generator">project</a> by 
+        <a href="https://github.com/rcagantas">Roel Cagantas</a>
+      </div>
     </section>
   </main>
   <script>
-    const random = (max) => Math.floor(Math.random() * max);
-    const capitalize = (s) => (s.charAt(0).toUpperCase() + s.slice(1));
-
-    const state = {
-      seed: {
-        biomes: ['aquatic','marine','grassland','forest','jungle','desert','alpine','arctic','polar'],
-        creatures: ['angel','bigfoot','dragon','dwarf','elf','faerie','faun','gargolye','ghost','giant','harpie',
-          'jinn','kraken','mermaid','ogre','orc','phoenix','troll','undead','werewolf','witch','vampire','yeti',
-          'yokai','gnome','bogeyman','chimera','cyclops','beholder','lakhey','unicorn','satyr','siren'
-        ]
-      },
-      projectName: 'Secret Project Name Generator',
-      copyState: '',
-      generateProjectName() {
-        const biome = this.seed.biomes[random(this.seed.biomes.length)];
-        const creature = this.seed.creatures[random(this.seed.creatures.length)];
-        this.projectName = capitalize(biome) + ' ' + capitalize(creature);
-      },
-      copyToClipboard() {
-        const text = this.projectName;
-        if (!navigator.clipboard) {
-          this.copyState = 'Failed to copy to clipboard';
-          return;
-        }
-        navigator.clipboard.writeText(text).then(() => {
-          this.copyState = 'Copied to clipboard';
-        });
-      }
+    const seed = {
+      biomes: ['aquatic','marine','grassland','forest','jungle','desert','alpine','arctic','polar'],
+      creatures: ['angel','bigfoot','dragon','dwarf','elf','faerie','faun','gargolye','ghost','giant','harpie',
+        'jinn','kraken','mermaid','ogre','orc','phoenix','troll','undead','werewolf','witch','vampire','yeti',
+        'yokai','gnome','bogeyman','chimera','cyclops','beholder','lakhey','unicorn','satyr','siren'
+      ]
     };
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('state', () => state);
-    });
+
+    let biome; 
+    let creature;
+    let delimiter = '-';
+
+    const random = (max) => Math.floor(Math.random() * max);
+    const buildName = () => { 
+      if (!biome || !creature) return;
+      document.getElementById('projectName').innerText = biome + delimiter + creature;
+    };
+    const toggleUnderscore = (checkbox) => { delimiter = checkbox.checked? '_' : '-'; buildName(); };
+    const generateName = () => {
+      biome = seed.biomes[random(seed.biomes.length)];
+      creature = seed.creatures[random(seed.creatures.length)];
+      buildName();
+    };
+    const setCopyState = (text) => { document.getElementById('copyState').innerText = text; };
+    const copyToClipboard = () => {
+      const text = biome + delimiter + creature;
+      if (!navigator.clipboard) { 
+        setCopyState('Failed to copy to clipboard'); 
+        return; 
+      }
+      navigator.clipboard.writeText(text).then(() => setCopyState('Copied to clipboard'));
+    }
 </script>
 </body>
 </html>
